@@ -5,5 +5,16 @@ set(SOURCES
   log-file.cc
   logging.cc
   log-stream.cc
-  log-util.cc)
+  log-util.cc
+  channel.cc
+  cur-epoll.cc
+  event-loop.cc
+  event-loop-thread.cc
+  event-loop-thread-pool.cc
+  websocket-data.cc
+  server.cc
+  base64.cc
+  sha1.cc
+  util.cc
+  )
 add_library(${NAME} STATIC ${SOURCES})
