@@ -63,6 +63,9 @@ void Server::handNewConn() {
   acceptChannel_->setEvents(EPOLLIN | EPOLLET);
 }
 
+void Server::handThisConn() {
+  loop_->updatePoller(acceptChannel_);
+}
 
 }
 

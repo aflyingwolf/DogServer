@@ -70,8 +70,7 @@ ssize_t writen(int fd, void *buff, size_t n) {
   return writeSum;
 }
 EventLoop::EventLoop()
-    : looping_(false),
-      poller_(new Epoll()),
+    : poller_(new Epoll()),
       wakeupFd_(createEventfd()),
       quit_(false),
       eventHandling_(false),
@@ -93,14 +92,13 @@ EventLoop::~EventLoop() {
   if (wakeupFd_ > 0) {
     close(wakeupFd_);
   }
+  LOG_D << "~EventLoop()";
   removeFromPoller(pwakeupChannel_);
   t_loopInThisThread = NULL;
 }
 
 void EventLoop::loop() {
-  assert(!looping_);
   assert(isInLoopThread());
-  looping_ = true;
   quit_ = false;
   std::vector<SP_Channel> ret;
   while (!quit_) {
@@ -113,7 +111,6 @@ void EventLoop::loop() {
     doPendingFunctors();
     poller_->handleExpired();
   }
-  looping_ = false;
 }
 
 void EventLoop::quit() {

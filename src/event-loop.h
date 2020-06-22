@@ -35,7 +35,6 @@ class EventLoop {
     poller_->epoll_add(channel, timeout);
   }
  private:
-  bool looping_;
   std::shared_ptr<Epoll> poller_;
   int wakeupFd_;
   bool quit_;
@@ -50,6 +49,8 @@ class EventLoop {
   void handleRead();
   void handleConn();
   void doPendingFunctors();
+ private:
+  int debug_time_;
 };
 
 }

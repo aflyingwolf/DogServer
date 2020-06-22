@@ -6,6 +6,7 @@
 **/
 
 #pragma once
+#include "logging.h"
 namespace server {
 
 enum PacketState {
@@ -19,15 +20,6 @@ enum PacketState {
 class Packet {
  public:
   Packet(){
-    reset();
-  }
-  ~Packet(){
-    if (data_) {
-      free(data_);
-      data_ = NULL;
-    }   
-  }
-  void reset() {
     data_ = NULL;
     len_ = 0;
     size_ = 0;
@@ -38,8 +30,24 @@ class Packet {
     head_size_ = 0;
     state_ = PACKET_INIT;
   }
+  ~Packet(){
+    if (data_) {
+      free(data_);
+      data_ = NULL;
+    }   
+  }
+  void reset() {
+    len_ = 0;
+    fin_ = 0;
+    opcode_ = 0;
+    mask_ = 0;
+    body_size_ = 0;
+    head_size_ = 0;
+    state_ = PACKET_INIT;
+  }
   void resize(int len) {
     if (len > size_) {
+      LOG_D << "resize:" << len;
       data_ = (char*)realloc(data_, len);
       size_ = len;
     }   

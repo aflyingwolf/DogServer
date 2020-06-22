@@ -19,7 +19,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-
+//#include <mcheck.h>
 static void signal_handler(int signum) {
   switch (signum) {
     case SIGINT:
@@ -70,6 +70,8 @@ int main(int argc, char *argv[]) {
     }
   }
   //setup_signal_handlers();
+  //setenv("MALLOC_TRACE", "mtrace_output.txt", 1);
+  //mtrace();
   server::Logger::setLogFileName(logPath);
   server::EventLoop mainLoop;
   server::Server websocketServer(&mainLoop, threadNum, port);

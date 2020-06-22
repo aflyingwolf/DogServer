@@ -38,6 +38,7 @@ void WebSocketData::handleClose() {
   LOG_D << "remove from poller.";
   loop_->removeFromPoller(channel_);
   channel_->holder_.reset();
+  //loop_->quit();
 }
 
 void WebSocketData::newEvent() {
@@ -491,8 +492,8 @@ int WebSocketData::processStart() {
 int WebSocketData::processPacket() {
   LOG_I << "process packet.";
   char *data = readPacket_->buffer();
-  std::string tmp(data, readPacket_->len_);
-  LOG_I << "DATA:" << tmp << "Len:" << readPacket_->len_;
+  //std::string tmp(data, readPacket_->len_);
+  //LOG_I << "DATA:" << tmp << "Len:" << readPacket_->len_;
   if (readPacket_->opcode_ == WEBSOCKET_CONNECT_CLOSE || 
       readPacket_->opcode_ == WEBSOCKET_TEXT_DATA && 
       readPacket_->state_ == PACKET_INIT && 

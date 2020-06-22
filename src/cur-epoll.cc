@@ -24,6 +24,7 @@ Epoll::~Epoll() {
 void Epoll::epoll_add(SP_Channel request, int timeout) {
   int fd = request->getFd();
   struct epoll_event event;
+  memset(&event, 0, sizeof(struct epoll_event));
   event.data.fd = fd; 
   event.events = request->getEvents();
 
