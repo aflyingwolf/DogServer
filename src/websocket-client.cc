@@ -1030,8 +1030,8 @@ int webSocket_clientLinkToServer(char *ip, int port, char *interface_path)
     // printf("key2:%s\r\n", shakeKey);
 
     //非阻塞
-    ret = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, ret | O_NONBLOCK);
+    //ret = fcntl(fd, F_GETFL, 0);
+    //fcntl(fd, F_SETFL, ret | O_NONBLOCK);
 
     //connect
     timeOut = 0;

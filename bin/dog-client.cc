@@ -106,9 +106,9 @@ void *SendThread(void *arg) {
       item = &(list->list[list->cur_pos]);
       list->cur_pos++;
     }
-    if (list->cur_pos > 200) {
+    /*if (list->cur_pos > 200) {
       list->cur_pos = 0;
-    }
+    }*/
     param->thread_ids[thread_id] = -1;
     pthread_mutex_unlock(&mute);
     if (item == NULL) {
@@ -121,10 +121,10 @@ void *SendThread(void *arg) {
       exit(-1);
       return NULL;
     }
-    int nZero = 20 * 1024 *1024 ;
-    setsockopt(sockfd,SOL_SOCKET,SO_RCVBUF,(char *)&nZero,sizeof(int));
-
-    Setnonblocking(sockfd);
+    int nZero = 100 * 1024 *1024 ;
+    //setsockopt(sockfd,SOL_SOCKET,SO_RCVBUF,(char *)&nZero,sizeof(int));
+    //setsockopt(sockfd,SOL_SOCKET,SO_SNDBUF,(char *)&nZero,sizeof(int));
+    //Setnonblocking(sockfd);
 
     UserData uu;
     uu.item = item;
@@ -144,10 +144,11 @@ void *SendThread(void *arg) {
     FILE *fp = fopen(item->path, "r");
     int rc = 0;
     char buf[20480];
-
+    int tot = 0;
     while ( (rc = fread(buf, sizeof(char), 1000, fp)) > 0 ) {
       int n = webSocket_send(sockfd, buf, rc, true, WDT_TXTDATA);
-      //printf("socket %d write to server[ret = %d]\n", sockfd, n);
+      tot += n;
+      printf("socket %d write to server[ret = %d, tot = %d]\n", sockfd, n, tot);
     }
     buf[0] = 0;
     strcat(buf, "EOS");
@@ -163,6 +164,7 @@ void *SendThread(void *arg) {
     epoll_ctl(param->epfd, EPOLL_CTL_DEL, sockfd, &event);
     close(sockfd);
   }
+  param->thread_ids[thread_id] = 2; 
   return NULL;
 }
 
@@ -248,13 +250,23 @@ int main(int argc, char **argv) {
   int nfds = 0; 
 
   while (1) {
-    nfds = epoll_wait(epfd, ev, 20480, -1);
+    nfds = epoll_wait(epfd, ev, 20480, 2000);
     if (nfds < 0) {
       perror("epoll_wait");
       break;
     } else if (nfds == 0) {
-      printf("epoll_wait timeout!\n");
-      continue;
+      int i = 0;
+      for (; i < threadNum; i++) {
+        if (param.thread_ids[i] != 2) {
+          break;
+        }
+      }
+      if (i == threadNum) {
+        break;
+      } else {
+        printf("epoll_wait timeout!\n");
+        continue;
+      }
     }
     for (int i = 0; i < nfds; i++) {
       if (ev[i].events & EPOLLIN) {
