@@ -486,6 +486,7 @@ int WebSocketData::sendResult(const char *result, int length) {
 
 int WebSocketData::processStart() {
   LOG_I << "process start.";
+  this_conn_bytes_ = 0;
   return 0;
 }
 
@@ -507,16 +508,20 @@ int WebSocketData::processPacket() {
       }
     }
   } else {
-    std::string tmp_file = "file/" + uuid_;
-    FILE *fp = fopen(tmp_file.c_str(), "a");
-    fwrite(data, 1, readPacket_->len_, fp);
-    fclose(fp);
+    if (readPacket_->state_ == PACKET_INIT) {
+      this_conn_bytes_ += readPacket_->len_;
+      std::string tmp_file = "file/" + uuid_;
+      FILE *fp = fopen(tmp_file.c_str(), "a");
+      fwrite(data, 1, readPacket_->len_, fp);
+      fclose(fp);
+    }
   }
   return 0;
 }
 
 int WebSocketData::processEnd() {
   LOG_I << "process end.";
+  LOG_I << "receive_data_len: " << this_conn_bytes_;
   std::string result = "Websocket";
   sendResult(result.c_str(), result.size());
   return 0;

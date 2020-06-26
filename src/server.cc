@@ -21,6 +21,7 @@ Server::Server(EventLoop *loop, int threadNum, int port)
     LOG_E << "set socket non block failed";
     abort();
   }
+  debug_num_ = 0;
 }
 
 void Server::start() {
@@ -64,7 +65,13 @@ void Server::handNewConn() {
 }
 
 void Server::handThisConn() {
-  loop_->updatePoller(acceptChannel_);
+  if (debug_num_  < 2) {
+    loop_->updatePoller(acceptChannel_);
+    //debug_num_++;
+  } else {
+    sleep(1);
+    loop_->quit();
+  }
 }
 
 }

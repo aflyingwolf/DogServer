@@ -26,7 +26,7 @@ int main(int argc, char *argv) {
   for (int i = 0; i < 300; i++) {
     LOG_I << 3.1415926;
   }
-  for (int i = 0; i < 3;) {
+  for (int i = 0; i < 3; i++) {
     LOG_D << 'b';
   }
   return 0;

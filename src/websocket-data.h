@@ -53,7 +53,7 @@ class WebSocketData : public std::enable_shared_from_this<WebSocketData> {
   bool is_final_;
   std::map<std::string, std::string> headers_;
   std::string uuid_;
-
+  int this_conn_bytes_;
  private:
   void handleRead();
   void handleConn();

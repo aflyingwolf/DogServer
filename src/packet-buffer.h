@@ -39,6 +39,8 @@ class Packet {
   void reset() {
     len_ = 0;
     fin_ = 0;
+    //data_ = NULL;
+    //size_ = 0;
     opcode_ = 0;
     mask_ = 0;
     body_size_ = 0;

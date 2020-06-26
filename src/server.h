@@ -29,6 +29,7 @@ class Server {
   std::shared_ptr<Channel> acceptChannel_;
   int port_;
   int listenFd_;
+  int debug_num_;
 };
 }
 

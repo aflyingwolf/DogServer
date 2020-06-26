@@ -42,7 +42,7 @@ static void setup_signal_handlers() {
 
 int main(int argc, char *argv[]) {
   int threadNum = 1;
-  int port = 8880;
+  int port = 8881;
   std::string logPath = "./WebServer.log";
   // parse args
   int opt;
