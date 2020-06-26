@@ -26,18 +26,27 @@ WebSocketData::WebSocketData(EventLoop *loop, int connfd)
       uuid_(gen_uuid()){
   channel_->setReadHandler(bind(&WebSocketData::handleRead, this));
   channel_->setConnHandler(bind(&WebSocketData::handleConn, this));
+  #ifdef _ADD_ASR
+  asrDecoder_ = NULL;
+  #endif
 }
 
 WebSocketData::~WebSocketData() {
   LOG_I << "connect " << uuid_ << " leaving.";
   if (fd_ > 0) {
     close(fd_);
-  }   
+  }
+  #ifdef _ADD_ASR
+  if (asrDecoder_ != NULL) {
+    delete asrDecoder_;
+  }
+  #endif
 }
 void WebSocketData::handleClose() {
   LOG_D << "remove from poller.";
   loop_->removeFromPoller(channel_);
   channel_->holder_.reset();
+  loop_->idle = true;
   //loop_->quit();
 }
 
@@ -487,6 +496,9 @@ int WebSocketData::sendResult(const char *result, int length) {
 int WebSocketData::processStart() {
   LOG_I << "process start.";
   this_conn_bytes_ = 0;
+  #ifdef _ADD_ASR
+  asrDecoder_->start(8000);
+  #endif
   return 0;
 }
 
@@ -514,6 +526,9 @@ int WebSocketData::processPacket() {
       FILE *fp = fopen(tmp_file.c_str(), "a");
       fwrite(data, 1, readPacket_->len_, fp);
       fclose(fp);
+      #ifdef _ADD_ASR
+      asrDecoder_->process(data, readPacket_->len_);
+      #endif
     }
   }
   return 0;
@@ -523,8 +538,18 @@ int WebSocketData::processEnd() {
   LOG_I << "process end.";
   LOG_I << "receive_data_len: " << this_conn_bytes_;
   std::string result = "Websocket";
+  #ifdef _ADD_ASR
+  asrDecoder_->end();
+  result = asrDecoder_->getResult(true);
+  #endif
   sendResult(result.c_str(), result.size());
   return 0;
 }
 
+#ifdef _ADD_ASR
+int WebSocketData::addDecoder(dog::DogResource *res) {
+  asrDecoder_ = new dog::DogDecoder(res);
+  return 0;
+}
+#endif
 }

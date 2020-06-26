@@ -15,6 +15,9 @@
 #include <unistd.h>
 #include "util.h"
 #include "logging.h"
+#ifdef _ADD_ASR 
+#include "Dog-Decoder.h"
+#endif
 namespace server {
 
 class WebSocketData : public std::enable_shared_from_this<WebSocketData> {
@@ -23,7 +26,9 @@ class WebSocketData : public std::enable_shared_from_this<WebSocketData> {
   ~WebSocketData();
   void handleClose();
   void newEvent();
-
+  #ifdef _ADD_ASR
+  int addDecoder(dog::DogResource *res);
+  #endif
  private:
   int readAndParseHead();
   int sendRespond();
@@ -54,6 +59,9 @@ class WebSocketData : public std::enable_shared_from_this<WebSocketData> {
   std::map<std::string, std::string> headers_;
   std::string uuid_;
   int this_conn_bytes_;
+  #ifdef _ADD_ASR
+  dog::DogDecoder *asrDecoder_;
+  #endif
  private:
   void handleRead();
   void handleConn();

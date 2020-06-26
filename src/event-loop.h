@@ -51,6 +51,8 @@ class EventLoop {
   void doPendingFunctors();
  private:
   int debug_time_;
+ public:
+  bool idle;
 };
 
 }

@@ -2,7 +2,8 @@ SET(DEP
     ${OUTPUT_LIB}
     -ldl
     -lpthread
-    -luuid)
+    -luuid
+    -lgfortran)
 MESSAGE(STATUS "Dep in server Demo:${DEP}")
 
 SET(BINS log-test dog-server dog-client)

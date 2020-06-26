@@ -31,8 +31,17 @@ EventLoop *EventLoopThreadPool::getNextLoop() {
   assert(started_);
   EventLoop *loop = baseLoop_;
   if (!loops_.empty()) {
-    loop = loops_[next_];
-    next_ = (next_ + 1) % numThreads_;
+    //loop = loops_[next_];
+    //next_ = (next_ + 1) % numThreads_;
+    int i = 0;
+    while(true) {
+      if(loops_[i % numThreads_]->idle) {
+        loop = loops_[i %  numThreads_];
+        break;
+      }
+      LOG_I << "loop: " << i;
+      i++;
+    }
   }
   return loop;
 }

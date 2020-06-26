@@ -18,11 +18,12 @@ add_compile_options(-std=c++11)
 #add_compile_options(-fsanitize=leak)
 SET(BUILD_PATH ${CMAKE_BINARY_DIR})
 SET(SRC_PATH ${CMAKE_SOURCE_DIR})
+SET(LIB_PATH ${CMAKE_SOURCE_DIR}/lib)
 
-include_directories(${SRC_PATH}/src)
+include_directories(${SRC_PATH}/src ${SRC_PATH}/include)
 
 link_directories(${BUILD_PATH})
-
+#add_definitions(-D_ADD_ASR)
 add_subdirectory(src)
 add_subdirectory(bin)
 
@@ -32,7 +33,7 @@ ADD_CUSTOM_TARGET(${LIBNAME} ALL
     COMMAND echo SAVE >> ar.mac
     COMMAND echo END >> ar.mac
     COMMAND echo OPEN ${OUTPUT_LIB} > ar.mac
-    #COMMAND echo ADDLIB ${LIB_PATH}/libasr.a >> ar.mac
+    #COMMAND echo ADDLIB ${LIB_PATH}/libdog.a >> ar.mac
     COMMAND echo SAVE >> ar.mac
     COMMAND echo END >> ar.mac
     COMMAND ar -M < ar.mac

@@ -22,6 +22,17 @@ Server::Server(EventLoop *loop, int threadNum, int port)
     abort();
   }
   debug_num_ = 0;
+  #ifdef _ADD_ASR
+  asrRes_ = new dog::DogResource();
+  #endif
+}
+
+Server::~Server() {
+  #ifdef _ADD_ASR
+  if (asrRes_) {
+    delete asrRes_;
+  }
+  #endif
 }
 
 void Server::start() {
@@ -29,7 +40,10 @@ void Server::start() {
   acceptChannel_->setEvents(EPOLLIN | EPOLLET);
   acceptChannel_->setReadHandler(std::bind(&Server::handNewConn, this));
   acceptChannel_->setConnHandler(std::bind(&Server::handThisConn, this));
-  loop_->addToPoller(acceptChannel_, 0); 
+  loop_->addToPoller(acceptChannel_, 0);
+  #ifdef _ADD_ASR
+  asrRes_->Load("conf/dog.conf");
+  #endif
 }
 
 void Server::handNewConn() {
@@ -40,6 +54,7 @@ void Server::handNewConn() {
   while ((accept_fd = accept(listenFd_, (struct sockaddr *)&client_addr,
                              &client_addr_len)) > 0) {
     EventLoop *loop = eventLoopThreadPool_->getNextLoop();
+    loop->idle = false;
     LOG_I << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":"
         << ntohs(client_addr.sin_port);
     // 限制服务器的最大并发连接数
@@ -58,6 +73,9 @@ void Server::handNewConn() {
 
     std::shared_ptr<WebSocketData> req_info(new WebSocketData(loop, accept_fd));
     std::shared_ptr<Channel> new_channel = req_info->getChannel();
+    #ifdef _ADD_ASR
+    req_info->addDecoder(asrRes_);
+    #endif
     new_channel->holder_ = req_info;
     loop->queueInLoop(std::bind(&WebSocketData::newEvent, req_info));
   }

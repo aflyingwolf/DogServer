@@ -9,12 +9,15 @@
 #include "websocket-data.h"
 #include "event-loop.h"
 #include "event-loop-thread-pool.h"
+#ifdef _ADD_ASR 
+#include "Dog-Decoder.h"
+#endif
 namespace server {
 
 class Server {
  public:
   Server(EventLoop *loop, int threadNum, int port);
-  ~Server() {}
+  ~Server();
   EventLoop *getLoop() const {
     return loop_;
   }
@@ -30,6 +33,9 @@ class Server {
   int port_;
   int listenFd_;
   int debug_num_;
+  #ifdef _ADD_ASR
+  dog::DogResource *asrRes_;
+  #endif
 };
 }
 

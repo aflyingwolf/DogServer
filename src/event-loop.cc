@@ -74,6 +74,7 @@ EventLoop::EventLoop()
       wakeupFd_(createEventfd()),
       quit_(false),
       eventHandling_(false),
+      idle(true),
       callingPendingFunctors_(false),
       threadId_(tid()),
       pwakeupChannel_(new Channel(this, wakeupFd_)) {

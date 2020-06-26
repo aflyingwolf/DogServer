@@ -145,7 +145,7 @@ void *SendThread(void *arg) {
     int rc = 0;
     char buf[20480];
 
-    while ( (rc = fread(buf, sizeof(char), 20480, fp)) > 0 ) {
+    while ( (rc = fread(buf, sizeof(char), 1000, fp)) > 0 ) {
       int n = webSocket_send(sockfd, buf, rc, true, WDT_TXTDATA);
       //printf("socket %d write to server[ret = %d]\n", sockfd, n);
     }
@@ -171,15 +171,16 @@ FileList *load_list(const char *list_name) {
   vector<string> ids;
   vector<string> paths;
   char line[2014];
-  while (!feof(fp)){
-    memset(line, 0, sizeof(line));
-    fgets(line, sizeof(line) - 1, fp); // 包含了换行符
-    printf("%s", line);
+  memset(line, 0, sizeof(line));
+  while (fgets(line, sizeof(line) - 1, fp)){
+    //fgets(line, sizeof(line) - 1, fp); // 包含了换行符
+    //printf("%s", line);
     char id[256] = {0};
     char path[1024] = {0};
     sscanf(line, "%s\t%s\n", id, path);
     ids.push_back(string(id));
     paths.push_back(string(path));
+    memset(line, 0, sizeof(line));
   }
   fclose(fp);
   FileList *list = (FileList*)malloc(sizeof(FileList));

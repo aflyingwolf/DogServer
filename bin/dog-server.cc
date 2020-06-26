@@ -19,6 +19,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <fstream>
+#include <iostream>
 //#include <mcheck.h>
 static void signal_handler(int signum) {
   switch (signum) {
@@ -45,6 +47,19 @@ int main(int argc, char *argv[]) {
   int port = 8881;
   std::string logPath = "./WebServer.log";
   // parse args
+  if (argc < 3) {
+    printf("usage: %s -t 5 -l server.log -p 8843\n", argv[0]);
+    return -1;
+  }
+
+  std::ofstream fout("output.txt");
+  //streambuf *cinbackup;
+  std::streambuf *coutbackup;
+  coutbackup= std::cout.rdbuf(fout.rdbuf());
+  //cinbackup= cin.rdbuf(fin.rdbuf());
+  std::cerr.rdbuf(fout.rdbuf());
+  //cin.rdbuf(cinbackup);
+  std::cout.rdbuf(coutbackup);
   int opt;
   const char *str = "t:l:p:";
   while ((opt = getopt(argc, argv, str)) != -1) {

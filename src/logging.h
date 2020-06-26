@@ -7,6 +7,7 @@
 
 #pragma once
 #include "log-stream.h"
+#include "cur-thread.h"
 namespace server {
 
 class Logger {
@@ -33,10 +34,10 @@ class Logger {
   static std::string logFileName_;
 };
 
-#define LOG_E Logger(__FILE__, __LINE__).stream() << "Error: "
-#define LOG_I Logger(__FILE__, __LINE__).stream() << "Info : "
-#define LOG_D Logger(__FILE__, __LINE__).stream() << "Debug: "
-#define LOG_W Logger(__FILE__, __LINE__).stream() << "Warn : "
+#define LOG_E Logger(__FILE__, __LINE__).stream() << tid() << " Error: "
+#define LOG_I Logger(__FILE__, __LINE__).stream() << tid() << " Info : "
+#define LOG_D Logger(__FILE__, __LINE__).stream() << tid() << " Debug: "
+#define LOG_W Logger(__FILE__, __LINE__).stream() << tid() << " Warn : "
 
 }
 
