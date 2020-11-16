@@ -21,7 +21,7 @@ class Server {
   EventLoop *getLoop() const {
     return loop_;
   }
-  void start();
+  void start(std::string conf = "conf/dog.conf");
   void handNewConn();
   void handThisConn();
  private:

@@ -17,5 +17,6 @@ set(SOURCES
   sha1.cc
   util.cc
   websocket-client.cc
+  cJSON.cc
   )
 add_library(${NAME} STATIC ${SOURCES})

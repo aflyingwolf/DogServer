@@ -61,7 +61,8 @@ int main(int argc, char *argv[]) {
   //cin.rdbuf(cinbackup);
   std::cout.rdbuf(coutbackup);
   int opt;
-  const char *str = "t:l:p:";
+  const char *str = "t:l:p:c:";
+  std::string conf = "";
   while ((opt = getopt(argc, argv, str)) != -1) {
     switch (opt) {
       case 't': {
@@ -80,6 +81,10 @@ int main(int argc, char *argv[]) {
         port = atoi(optarg);
         break;
       }
+      case 'c': {
+        conf = optarg;
+        break;
+      }
       default:
         break;
     }
@@ -90,7 +95,7 @@ int main(int argc, char *argv[]) {
   server::Logger::setLogFileName(logPath);
   server::EventLoop mainLoop;
   server::Server websocketServer(&mainLoop, threadNum, port);
-  websocketServer.start();
+  websocketServer.start(conf);
   mainLoop.loop();
   return 0;
 }

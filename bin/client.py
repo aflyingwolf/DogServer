@@ -68,7 +68,7 @@ class MyClient(WebSocketClient):
 def main():
 
     parser = argparse.ArgumentParser(description='Command line client for server')
-    parser.add_argument('-u', '--uri', default="ws://192.168.204.137:8881", dest="uri", help="Server websocket URI")
+    parser.add_argument('-u', '--uri', default="ws://192.168.1.30:8082", dest="uri", help="Server websocket URI")
     parser.add_argument('-p', '--param', default="", dest="param", type=str, help="like {fr='test',uid='-1',cuid='',fm='mp3'}")
     parser.add_argument('-f','--filename', help="str")
     args = parser.parse_args()

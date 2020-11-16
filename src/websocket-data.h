@@ -42,7 +42,7 @@ class WebSocketData : public std::enable_shared_from_this<WebSocketData> {
   int writeData(std::shared_ptr<Packet> packet);
   int parseHead(std::string &head);
   int sendResult(const char *result, int length);
-
+  std::string formatJson(std::string result, int last_result);
  public:
   std::shared_ptr<Channel> getChannel() { return channel_; }
   EventLoop *getLoop() { return loop_; }

@@ -4,8 +4,8 @@ set(NAME "DogServer")
 set(LIBNAME "lib${NAME}.a")
 set(OUTPUT_LIB "lib${NAME}.a")
 
-SET(CMAKE_BUILD_TYPE "DEBUG")
-#SET(CMAKE_BUILD_TYPE "RELEASE")
+#SET(CMAKE_BUILD_TYPE "DEBUG")
+SET(CMAKE_BUILD_TYPE "RELEASE")
 
 SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -fPIC -g -Wno-deprecated")
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -fPIC -O3 -Wall -Wno-deprecated")
@@ -23,7 +23,7 @@ SET(LIB_PATH ${CMAKE_SOURCE_DIR}/lib)
 include_directories(${SRC_PATH}/src ${SRC_PATH}/include)
 
 link_directories(${BUILD_PATH})
-#add_definitions(-D_ADD_ASR)
+add_definitions(-D_ADD_ASR)
 add_subdirectory(src)
 add_subdirectory(bin)
 
@@ -33,7 +33,7 @@ ADD_CUSTOM_TARGET(${LIBNAME} ALL
     COMMAND echo SAVE >> ar.mac
     COMMAND echo END >> ar.mac
     COMMAND echo OPEN ${OUTPUT_LIB} > ar.mac
-    #COMMAND echo ADDLIB ${LIB_PATH}/libdog.a >> ar.mac
+    COMMAND echo ADDLIB ${LIB_PATH}/libdog.a >> ar.mac
     COMMAND echo SAVE >> ar.mac
     COMMAND echo END >> ar.mac
     COMMAND ar -M < ar.mac

@@ -25,6 +25,7 @@ Server::Server(EventLoop *loop, int threadNum, int port)
   #ifdef _ADD_ASR
   asrRes_ = new dog::DogResource();
   #endif
+  LOG_D << "open server.";
 }
 
 Server::~Server() {
@@ -35,14 +36,14 @@ Server::~Server() {
   #endif
 }
 
-void Server::start() {
+void Server::start(std::string conf) {
   eventLoopThreadPool_->start();
   acceptChannel_->setEvents(EPOLLIN | EPOLLET);
   acceptChannel_->setReadHandler(std::bind(&Server::handNewConn, this));
   acceptChannel_->setConnHandler(std::bind(&Server::handThisConn, this));
   loop_->addToPoller(acceptChannel_, 0);
   #ifdef _ADD_ASR
-  asrRes_->Load("conf/dog.conf");
+  asrRes_->Load(conf.c_str());
   #endif
 }
 

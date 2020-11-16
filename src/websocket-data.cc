@@ -12,6 +12,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include "cJSON.h"
 namespace server {
 
 WebSocketData::WebSocketData(EventLoop *loop, int connfd)
@@ -43,7 +44,7 @@ WebSocketData::~WebSocketData() {
   #endif
 }
 void WebSocketData::handleClose() {
-  LOG_D << "remove from poller.";
+  LOG_D << uuid_ << " remove from poller.";
   loop_->removeFromPoller(channel_);
   channel_->holder_.reset();
   loop_->idle = true;
@@ -163,12 +164,12 @@ int WebSocketData::readAndParseHead() {
       } else if (errno == EAGAIN) {
         break;
       } else {
-        LOG_E << "read Http head error!";
+        LOG_E << uuid_ << " read Http head error!";
         error_ = ERROR_PARSE_HEAD;
         return -1;
       }
     } else if (nread == 0) {
-      LOG_E << "maybe client has closed.";
+      LOG_E << uuid_ << " maybe client has closed.";
       error_ = ERROR_CLIENT_CLOSE; 
       return -1;
     }
@@ -186,7 +187,7 @@ int WebSocketData::parseHead(std::string &head) {
     isReachHeadTail = true;
   }
   if (isReachHeadTail == false) {
-    LOG_E << "not reach whole http head.";
+    LOG_E << uuid_ << " not reach whole http head.";
     error_ = ERROR_PARSE_HEAD;
     return -1;
   }
@@ -197,7 +198,7 @@ int WebSocketData::parseHead(std::string &head) {
   if (request[request.size()-1] == '\r') {
     request.erase(request.end()-1);
   } else {
-    LOG_E << "this line tail not correct.";
+    LOG_E << uuid_ << " this line tail not correct.";
     error_ = ERROR_PARSE_HEAD;
     return -1; 
   }
@@ -205,7 +206,7 @@ int WebSocketData::parseHead(std::string &head) {
   std::string::size_type end;
   while (std::getline(s, header) && header != "\r") {
     if (header[header.size()-1] != '\r') {
-      LOG_E << "not should reach there.";
+      LOG_E << uuid_ << " not should reach there.";
       continue; //end
     } else {
       header.erase(header.end()-1);   //remove last char
@@ -255,14 +256,14 @@ int WebSocketData::writeData(std::string &data) {
     written_bytes = write(fd_, ptr, bytes_left); 
     if (written_bytes <= 0) {
       if (errno == EINTR) {   
-        LOG_W << "write data to socket encounter EINTR , continue";
+        LOG_W << uuid_ << " write data to socket encounter EINTR , continue";
         continue;
       } else if (errno == EAGAIN) {
-        LOG_W << "write data to socket encounter EAGAIN, continue-" <<  bytes_left;
+        LOG_W << uuid_ << " write data to socket encounter EAGAIN, continue-" <<  bytes_left;
         usleep(200);
         continue;
       } else {
-        LOG_E << "write Error.";
+        LOG_E << uuid_ << " write Error.";
         error_ = ERROR_WRITE;
         return -1;
       }   
@@ -283,14 +284,14 @@ int WebSocketData::writeData(std::shared_ptr<Packet> packet) {
     written_bytes = write(fd_, ptr, bytes_left); 
     if (written_bytes <= 0) {
       if (errno == EINTR) {   
-        LOG_W << "write data to socket encounter EINTR , continue";
+        LOG_W << uuid_ << " write data to socket encounter EINTR , continue";
         continue;
       } else if (errno == EAGAIN) {
-        LOG_W << "write data to socket encounter EAGAIN, continue-" << bytes_left;
+        LOG_W << uuid_ << " write data to socket encounter EAGAIN, continue-" << bytes_left;
         usleep(200);
         continue;
       } else {
-        LOG_E << "write Error.";
+        LOG_E << uuid_ << " write Error.";
         error_ = ERROR_WRITE;
         return -1; 
       }   
@@ -316,7 +317,7 @@ int WebSocketData::readAndParsePacket() {
     char head[2];
     rbytes = read(fd_, head, 2);
     if (rbytes != 2) {
-      LOG_E << "not should this error.";
+      LOG_E << uuid_ << " not should this error.";
       error_ = ERROR_READ;
       return -1;
     }
@@ -343,7 +344,7 @@ int WebSocketData::readAndParsePacket() {
     char len_buffer[2];
     rbytes = read(fd_, len_buffer, 2);
     if (rbytes != 2) {
-      LOG_E << "not should this error.";
+      LOG_E << uuid_ << " not should this error.";
       error_ = ERROR_READ;
       return -1;
     }
@@ -361,7 +362,7 @@ int WebSocketData::readAndParsePacket() {
     char len_buffer[8];
     rbytes = read(fd_, len_buffer, 8);
     if (rbytes != 8) {
-      LOG_E << "not should this error.";
+      LOG_E << uuid_ << " not should this error.";
       error_ = ERROR_READ;
       return -1;
     }
@@ -369,7 +370,7 @@ int WebSocketData::readAndParsePacket() {
     bytes -= 8;
     if (len_buffer[0] != 0 && len_buffer[1] != 0 &&
         len_buffer[2] != 0 && len_buffer[3] != 0) {
-      LOG_E << "body len too big, error.";
+      LOG_E << uuid_ << " body len too big, error.";
       error_ = ERROR_PARSE_DATA;
       return -1;
     }
@@ -391,7 +392,7 @@ int WebSocketData::readAndParsePacket() {
       rbytes = read(fd_, mask_buffer, 4);
 
       if (rbytes != 4) {
-        LOG_E << "not should this error.";
+        LOG_E << uuid_ << " not should this error.";
         error_ = ERROR_READ;
         return -1;
       }
@@ -422,7 +423,7 @@ int WebSocketData::readAndParsePacket() {
       ptr[i] = ptr[i] ^ packet->masking_key_[j];
     }
     if (rbytes != readLen) {
-      LOG_E << "not should this error.";
+      LOG_E << uuid_ << " not should this error.";
       error_ = ERROR_READ;
       return -1;
     }
@@ -433,6 +434,20 @@ int WebSocketData::readAndParsePacket() {
     }
   } 
   return 0; 
+}
+
+std::string WebSocketData::formatJson(std::string result, int last_result) {
+  cJSON *root = cJSON_CreateObject();
+  int status = 0;
+  cJSON_AddNumberToObject(root, "result_type", last_result);
+  cJSON_AddNumberToObject(root, "status", status);
+  cJSON_AddStringToObject(root, "uuid", uuid_.c_str());
+  cJSON_AddStringToObject(root, "result", result.c_str());
+  char *out = cJSON_Print(root);
+  std::string output = out;
+  free(out);
+  cJSON_Delete(root);
+  return output;
 }
 
 int WebSocketData::sendResult(const char *result, int length) {
@@ -494,16 +509,16 @@ int WebSocketData::sendResult(const char *result, int length) {
 }
 
 int WebSocketData::processStart() {
-  LOG_I << "process start.";
+  LOG_I << uuid_ << " process start.";
   this_conn_bytes_ = 0;
   #ifdef _ADD_ASR
-  asrDecoder_->start(8000);
+  asrDecoder_->start(16000);
   #endif
   return 0;
 }
 
 int WebSocketData::processPacket() {
-  LOG_I << "process packet.";
+  LOG_I << uuid_ << " process packet, packet len:" << readPacket_->len_;
   char *data = readPacket_->buffer();
   //std::string tmp(data, readPacket_->len_);
   //LOG_I << "DATA:" << tmp << "Len:" << readPacket_->len_;
@@ -526,22 +541,29 @@ int WebSocketData::processPacket() {
       FILE *fp = fopen(tmp_file.c_str(), "a");
       fwrite(data, 1, readPacket_->len_, fp);
       fclose(fp);
+      std::string result = "Websocket";
       #ifdef _ADD_ASR
       asrDecoder_->process(data, readPacket_->len_);
+      result = asrDecoder_->getResult(true);
+      LOG_I << uuid_ << " middle recognize result:" << result;
       #endif
+      result = formatJson(result, 0);
+      sendResult(result.c_str(), result.size());
     }
   }
   return 0;
 }
 
 int WebSocketData::processEnd() {
-  LOG_I << "process end.";
-  LOG_I << "receive_data_len: " << this_conn_bytes_;
+  LOG_I << uuid_ << " process end.";
+  LOG_I << uuid_ << " receive_data_len: " << this_conn_bytes_;
   std::string result = "Websocket";
   #ifdef _ADD_ASR
   asrDecoder_->end();
   result = asrDecoder_->getResult(true);
+  LOG_I << uuid_ << " final recognize result:" << result;
   #endif
+  result = formatJson(result, 1);
   sendResult(result.c_str(), result.size());
   return 0;
 }
